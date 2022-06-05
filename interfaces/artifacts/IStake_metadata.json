@@ -1,0 +1,45 @@
+{
+	"compiler": {
+		"version": "0.8.14+commit.80d49f37"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"interfaces/IStake.sol": "IStake"
+		},
+		"evmVersion": "london",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"interfaces/IStake.sol": {
+			"keccak256": "0x4861b21ee825b707abe44a434d98fd09dc72402e16f1821826c79680b277289f",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://000372e16fd3a6815532bcb20a041366e31cf03516482c23662e80fe4dafe188",
+				"dweb:/ipfs/QmTyRe8qBYAj4zYnem2h9ihoCpgHTEXZiT584LoEBaLecH"
+			]
+		}
+	},
+	"version": 1
+}
