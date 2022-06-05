@@ -202,7 +202,7 @@ contract BobotGenesis is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable
 
         for (uint256 i = 1; i <= mintCount; ++i) {
             uint256 nextTokenId = _getNextTokenId();
-            _safeMint(msg.sender, nextTokenId + i);
+            _safeMint(msg.sender, nextTokenId);
         }
     }
 
