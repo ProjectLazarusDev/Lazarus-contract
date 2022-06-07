@@ -66,9 +66,8 @@ contract BobotGenesis is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable
     string public baseRevealedURI;
     string public baseHiddenURI;
 
-    string public baseExtention = ".json";
-    uint256 public maxSupply = 4040;
-    uint256 public maxMintAmount = 1;
+    string public baseExtention = "";
+    uint256 constant maxSupply = 4040;
     uint256 public maxLevelAmount = 10;
 
     //reveal whitelist variables
@@ -159,9 +158,6 @@ contract BobotGenesis is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable
                     "user already whitelisted"
                 );
 
-                // default max mint amount is 1 
-                maxMintAmount = 1;
-
                 bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
 
                 bool isGuardians = MerkleProof.verify(
@@ -186,14 +182,12 @@ contract BobotGenesis is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable
 
                 if (isGuardians) {
                     require(_getNextTokenId() <= maxSupply);
-                    setmaxMintAmount(1);
                     mintCount = 1;
                     whitelistedAddressesGuardiansClaimed[msg.sender] = true;
                 }
 
                 if (isLunars) {
                     require(_getNextTokenId() + 1 <= maxSupply);
-                    setmaxMintAmount(2);
                     mintCount = 2;
                     whitelistedAddressesLunarClaimed[msg.sender] = true;
                 }
@@ -208,8 +202,7 @@ contract BobotGenesis is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable
 
     /**************************************************************************/
     /*!
-       \brief mint a bobot - multiple things to check 
-       does user have $MAGIC in their wallet?
+       \brief mint a bobot - test
     */
     /**************************************************************************/
     function mintBobotTest() public payable {
@@ -268,17 +261,13 @@ contract BobotGenesis is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable
         );
 
         string memory currentBaseURI = _baseURI();
-        uint256 currentLevelAmount = Math.min(
-            bobotCorePoints[tokenID] / coreChamberLevelCost,
-            maxLevelAmount
-        );
 
         string memory revealedURI = string(
             abi.encodePacked(
                 baseRevealedURI,
                 tokenID.toString(),
                 "/",
-                currentLevelAmount.toString(),
+                getCurrentBobotLevel(tokenID).toString(),
                 baseExtention
             )
         );
@@ -311,7 +300,6 @@ contract BobotGenesis is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable
         view 
         returns (uint256)
     {
-
         return  Math.min(
             bobotCorePoints[_tokenID] / coreChamberLevelCost,
             maxLevelAmount
@@ -385,15 +373,6 @@ contract BobotGenesis is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable
 
     /**************************************************************************/
     /*!
-       \brief set max mint amount
-    */
-    /**************************************************************************/
-    function setmaxMintAmount(uint256 _newmaxMintAmount) public onlyOwner {
-        maxMintAmount = _newmaxMintAmount;
-    }
-
-    /**************************************************************************/
-    /*!
        \brief set base URI
     */
     /**************************************************************************/
@@ -453,14 +432,5 @@ contract BobotGenesis is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable
     /**************************************************************************/
     function pause(bool _state) public onlyOwner {
         paused = _state;
-    }
-
-    /**************************************************************************/
-    /*!
-       \brief withdraw
-    */
-    /**************************************************************************/
-    function withdraw() public payable onlyOwner {
-        require(payable(msg.sender).send(address(this).balance));
     }
 }

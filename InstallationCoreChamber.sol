@@ -55,6 +55,8 @@ contract CoreChamber is OwnableUpgradeable
     uint256 public corePointsPerWeekGenesis;
     uint256 public corePointsPerWeekMegabot;
 
+    uint256 constant maxGenesisSupply = 4040;
+    uint256 constant maxMegabotSupply = 1000;
     //bobots genesis contract
     BobotGenesis public bobotGenesis;
 
@@ -98,18 +100,28 @@ contract CoreChamber is OwnableUpgradeable
         require(bobotMegabot.ownerOf(_tokenId) == msg.sender, "Megabot: only megabot owner can send to core chamber");
         _;
     }
+    /**************************************************************************/
+    /*!
+       \brief Update total core points
+    */
+    /**************************************************************************/
     modifier updateTotalCorePoints(bool isJoining, IBobot.BobotType _bobotType) {
         if (genesisSupply > 0) {
             totalCorePointsStored = totalCorePoints();
         }
         lastRewardTimestamp = block.timestamp;
+
         if(_bobotType == IBobot.BobotType.BOBOT_GEN)
             isJoining ? genesisSupply++ : genesisSupply--;
         if(_bobotType == IBobot.BobotType.BOBOT_MEGA)
             isJoining ? megabotSupply++ :  megabotSupply--;
         _;
     }
-
+    /**************************************************************************/
+    /*!
+       \brief Total core points
+    */
+    /**************************************************************************/
     function totalCorePoints() public view returns (uint256) {
         uint256 timeDelta = block.timestamp - lastRewardTimestamp;
         return totalCorePointsStored +
@@ -117,7 +129,11 @@ contract CoreChamber is OwnableUpgradeable
          (megabotSupply * corePointsPerWeekMegabot * timeDelta / WEEK);
     }
 
-
+    /**************************************************************************/
+    /*!
+       \brief Core points earned
+    */
+    /**************************************************************************/
     function corePointsEarnedGenesis(uint256 _tokenId) public view 
     returns (uint256 points) 
     {
@@ -125,6 +141,11 @@ contract CoreChamber is OwnableUpgradeable
         uint256 timedelta = block.timestamp -  genesisTimestampJoined[_tokenId];
         points = corePointsPerWeekGenesis * timedelta / WEEK;
     }
+    /**************************************************************************/
+    /*!
+       \brief Core points earned
+    */
+    /**************************************************************************/
     function corePointsEarnedMegabot(uint256 _tokenId) public view 
     returns (uint256 points) 
     {
@@ -132,7 +153,11 @@ contract CoreChamber is OwnableUpgradeable
         uint256 timedelta = block.timestamp -  megabotTimestampJoined[_tokenId];
         points = corePointsPerWeekMegabot * timedelta / WEEK;
     }
-
+    /**************************************************************************/
+    /*!
+       \brief Stake Genesis
+    */
+    /**************************************************************************/
     function stakeGenesis(uint256 _tokenId)  
         external
         onlyGenesisOwner(_tokenId)
@@ -140,7 +165,11 @@ contract CoreChamber is OwnableUpgradeable
         updateTotalCorePoints(true,IBobot.BobotType.BOBOT_GEN) {
         genesisTimestampJoined[_tokenId] = block.timestamp;
     }
-
+    /**************************************************************************/
+    /*!
+       \brief Unstake Genesis
+    */
+    /**************************************************************************/
     function unstakeGenesis(uint256 _tokenId) 
         external
         onlyGenesisOwner(_tokenId)
@@ -150,6 +179,11 @@ contract CoreChamber is OwnableUpgradeable
         bobotGenesis.coreChamberCorePointUpdate(_tokenId, corePointsEarnedGenesis(_tokenId));
         genesisTimestampJoined[_tokenId] = 0;
     }
+    /**************************************************************************/
+    /*!
+       \brief Stake megabot
+    */
+    /**************************************************************************/
     function stakeMegabot(uint256 _tokenId)  
         external
         onlyMegabotOwner(_tokenId)
@@ -157,7 +191,11 @@ contract CoreChamber is OwnableUpgradeable
         updateTotalCorePoints(true,IBobot.BobotType.BOBOT_MEGA) {
         megabotTimestampJoined[_tokenId] = block.timestamp;
     }
-
+    /**************************************************************************/
+    /*!
+       \brief Unstake megabot
+    */
+    /**************************************************************************/
     function unstakeMegabot(uint256 _tokenId) 
         external
         onlyMegabotOwner(_tokenId)
@@ -168,20 +206,36 @@ contract CoreChamber is OwnableUpgradeable
         megabotTimestampJoined[_tokenId] = 0;
     }
     
-    function emergencyUnstakeAllBobots()
+    /**************************************************************************/
+    /*!
+       \brief Set Bobot Genesis contract
+    */
+    /**************************************************************************/
+    function UnstakeAllBobots()
         external
         onlyOwner{
-        for (uint256 i; i < genesisSupply; ++i)
+        for (uint256 i; i < maxGenesisSupply; ++i)
         {
-            bobotGenesis.coreChamberCorePointUpdate(i, corePointsEarnedGenesis(i));
-            genesisTimestampJoined[i] = 0;
+            if(isAtCoreChamberGenesis(i))
+            {
+                bobotGenesis.coreChamberCorePointUpdate(i, corePointsEarnedGenesis(i));
+                genesisTimestampJoined[i] = 0;
+                
+            }
         }
 
-        for (uint256 i; i < megabotSupply; ++i)
+        for (uint256 i; i < maxMegabotSupply; ++i)
         {
-            bobotMegabot.coreChamberCorePointUpdate(i, corePointsEarnedMegabot(i));
-            megabotTimestampJoined[i] = 0;
+            if (isAtCoreChamberMegabot(i))
+            {
+                bobotMegabot.coreChamberCorePointUpdate(i, corePointsEarnedMegabot(i));
+                megabotTimestampJoined[i] = 0;
+                
+            }
         }
+
+        genesisSupply = 0;
+        megabotSupply = 0;
     }
 
     //admin function
@@ -194,15 +248,27 @@ contract CoreChamber is OwnableUpgradeable
     function setBobotGenesis(address _bobotGenesis) external onlyOwner {
         bobotGenesis = BobotGenesis(_bobotGenesis);
     }
-
+    /**************************************************************************/
+    /*!
+       \brief Set Bobot Megabots contract
+    */
+    /**************************************************************************/
    function setBobotMegabot(address _bobotMegabot) external onlyOwner {
         bobotMegabot = BobotMegaBot(_bobotMegabot);
     }
-
+    /**************************************************************************/
+    /*!
+       \brief Set how much core points genesis can earn
+    */
+    /**************************************************************************/
     function setCorePointsPerWeekGenesis(uint256 _corePointsPerWeekGenesis) external onlyOwner {
         corePointsPerWeekGenesis = _corePointsPerWeekGenesis;
     }
-
+    /**************************************************************************/
+    /*!
+       \brief Set how much core points megabot can earn
+    */
+    /**************************************************************************/
     function setCorePointsPerWeekMegabot(uint256 _corePointsPerWeekMegabot) external onlyOwner {
         corePointsPerWeekMegabot = _corePointsPerWeekMegabot;
     }
