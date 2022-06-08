@@ -20,6 +20,7 @@
   "dependencies": {
     "@openzeppelin/contracts": "^4.6.0",
     "@openzeppelin/contracts-upgradeable": "^4.6.0",
+    "@remix-project/remixd": "^0.6.2",
     "uint256": "^1.0.8"
   }
 }
