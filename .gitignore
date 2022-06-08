@@ -161,3 +161,4 @@ artifacts
 .certora*
 .last_confs
 certora_*
+secrets.json
