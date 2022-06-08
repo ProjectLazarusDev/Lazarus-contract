@@ -1,0 +1,131 @@
+{
+	"compiler": {
+		"version": "0.8.14+commit.80d49f37"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_tokenID",
+						"type": "uint256"
+					},
+					{
+						"internalType": "enum ILandTier.LandTierType",
+						"name": "_landTier",
+						"type": "uint8"
+					}
+				],
+				"name": "checkBreakImmunity",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_tokenID",
+						"type": "uint256"
+					},
+					{
+						"internalType": "enum ILandTier.LandTierType",
+						"name": "_landTier",
+						"type": "uint8"
+					}
+				],
+				"name": "getLandCost",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_tokenID",
+						"type": "uint256"
+					}
+				],
+				"name": "getLandTierType",
+				"outputs": [
+					{
+						"internalType": "enum ILandTier.LandTierType",
+						"name": "",
+						"type": "uint8"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_tokenID",
+						"type": "uint256"
+					},
+					{
+						"internalType": "enum ILandTier.LandTierType",
+						"name": "_landTier",
+						"type": "uint8"
+					}
+				],
+				"name": "setLandTierType",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"interfaces/ILandTier.sol": "ILandTier"
+		},
+		"evmVersion": "london",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"interfaces/ILandTier.sol": {
+			"keccak256": "0xc0d80de2943bdce8fc5aae5b4951682837dc6d79f7a47d31227bb0e7fcb35c1a",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://6c7f13efa9b7276a533de89a6b4bead4c9d80aa1d96d0c4c53292785db6cbac9",
+				"dweb:/ipfs/QmT3MDSj41su8UZ8eTHE92HYsoZxkhaWQSmTJgwXNcfwAK"
+			]
+		}
+	},
+	"version": 1
+}
