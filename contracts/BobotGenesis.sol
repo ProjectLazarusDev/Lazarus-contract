@@ -272,7 +272,7 @@ contract BobotGenesis is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable
             )
         );
 
-        return
+        return 
             bytes(currentBaseURI).length > 0
                 ? (revealed ? revealedURI : baseHiddenURI)
                 : "";
