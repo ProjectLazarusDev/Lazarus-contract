@@ -147,52 +147,51 @@ contract BobotGenesis is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable
        
         uint256 mintCount = 0;
         
-        if (msg.sender != owner()) {
-            //minter must be whitelisted
-            if (onlyWhitelisted == true) {
+        //minter must be whitelisted
+        if (onlyWhitelisted == true) {
 
-                // check if user already white listed either as a guardian or lunar
-                require(
-                    whitelistedAddressesGuardiansClaimed[msg.sender] == false ||
-                        whitelistedAddressesLunarClaimed[msg.sender] == false,
-                    "user already whitelisted"
-                );
+            // check if user already white listed either as a guardian or lunar
+            require(
+                 whitelistedAddressesGuardiansClaimed[msg.sender] == false ||
+                 whitelistedAddressesLunarClaimed[msg.sender] == false,
+                "user already whitelisted"
+            );
 
-                bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
+            bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
 
-                bool isGuardians = MerkleProof.verify(
-                    _merkleProof,
-                    rootGuardiansHash,
-                    leaf
-                );
-                bool isLunars = MerkleProof.verify(
-                    _merkleProof2,
-                    rootLunarsHash,
-                    leaf
-                );
+            bool isGuardians = MerkleProof.verify(
+                _merkleProof,
+                rootGuardiansHash,
+                leaf
+            );
+            bool isLunars = MerkleProof.verify(
+                _merkleProof2,
+                rootLunarsHash,
+                leaf
+            );
 
-                //check if leaf is valid
-                require(
-                    !isGuardians && !isLunars,
-                    "Invalid proof - not whitelisted"
-                );
+            //check if leaf is valid
+            require(
+                isGuardians || isLunars,
+                "Invalid proof - not whitelisted"
+            );
 
-                //guardians will have 1 mint
-                //lunars will have 2 mint
+            //guardians will have 1 mint
+            //lunars will have 2 mint
 
-                if (isGuardians) {
-                    require(_getNextTokenId() <= maxSupply);
-                    mintCount = 1;
-                    whitelistedAddressesGuardiansClaimed[msg.sender] = true;
-                }
+            if (isGuardians) {
+                require(_getNextTokenId() <= maxSupply);
+                mintCount = 1;
+                whitelistedAddressesGuardiansClaimed[msg.sender] = true;
+            }
 
-                if (isLunars) {
-                    require(_getNextTokenId() + 1 <= maxSupply);
-                    mintCount = 2;
-                    whitelistedAddressesLunarClaimed[msg.sender] = true;
-                }
+            if (isLunars) {
+                require(_getNextTokenId() + 1 <= maxSupply);
+                mintCount = 2;
+                whitelistedAddressesLunarClaimed[msg.sender] = true;
             }
         }
+            
 
         for (uint256 i = 1; i <= mintCount; ++i) {
             uint256 nextTokenId = _getNextTokenId();
