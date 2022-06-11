@@ -7,7 +7,7 @@
 // Be aware of NEVER putting real Ether into testing accounts
 const { alchemyApiKey, mnemonic } = require('./secrets.json');
 require("@nomiclabs/hardhat-waffle");
-
+require('@openzeppelin/hardhat-upgrades');
 module.exports = {
   solidity: "0.8.13",
   networks: {
