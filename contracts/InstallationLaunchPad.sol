@@ -40,7 +40,7 @@
 // //                     |____/ \____/|____/ \____/  |_| |_____/                  //
 // //////////////////////////////////////////////////////////////////////////////////
 
-// pragma solidity ^0.8.13;
+pragma solidity ^0.8.13;
 // import "./ERC721NES.sol";
 // import "@openzeppelin/contracts/access/Ownable.sol";
 

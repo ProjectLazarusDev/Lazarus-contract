@@ -1,6 +1,6 @@
-// // SPDX-License-Identifier: MIT
-// // Creator: base64.tech
-// pragma solidity ^0.8.13;
+// SPDX-License-Identifier: MIT
+// Creator: base64.tech
+pragma solidity ^0.8.13;
 
 // import "@openzeppelin/contracts/access/Ownable.sol";
 // import "./ERC721NES.sol";

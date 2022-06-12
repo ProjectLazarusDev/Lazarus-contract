@@ -66,13 +66,13 @@ contract BobotGenesis is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable
     string public baseRevealedURI;
     string public baseHiddenURI;
 
-    string public baseExtention = "";
+    string public baseExtention;
     uint256 constant maxSupply = 4040;
-    uint256 public maxLevelAmount = 10;
+    uint256 public maxLevelAmount;
 
     //reveal whitelist variables
-    bool public revealed = false;
-    bool public onlyWhitelisted = true;
+    bool public revealed;
+    bool public onlyWhitelisted;
 
     //store whitelisted addresses
     address[] whitelistedAddressesGuardians;
@@ -103,12 +103,18 @@ contract BobotGenesis is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable
     mapping(uint256 => uint256) public bobotCorePoints;
 
     //is the contract running
-    bool public paused = false;
+    bool public paused;
 
     function initialize() external initializer 
     {
         __ERC721Enumerable_init();
         __Ownable_init();
+
+        baseExtention = ""; 
+        maxLevelAmount = 10; 
+        revealed = false; 
+        onlyWhitelisted = true;
+        paused = false;
     }
     
     //modifiers
