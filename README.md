@@ -11,3 +11,18 @@ npm install -g @remix-project/remixd
 remixd -s . 
 ```
 https://remix-ide.readthedocs.io/en/latest/remixd.html 
+
+#### Compile
+```
+npx hardhat compile
+```
+
+#### Deploy example
+```
+npx hardhat run scripts/deploy.js --network arbitrum_rinkeby
+```
+
+#### Verify example
+```
+npx hardhat verify "ADDRESS" --network arbitrum_rinkeby
+```
