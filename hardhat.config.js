@@ -8,12 +8,19 @@
 const { alchemyApiKey, mnemonic } = require('./secrets.json');
 require("@nomiclabs/hardhat-waffle");
 require('@openzeppelin/hardhat-upgrades');
+require("@nomiclabs/hardhat-etherscan");
+
 module.exports = {
   solidity: "0.8.13",
   networks: {
     arbitrum_rinkeby: {
       url: `https://rinkeby.arbitrum.io/rpc/${alchemyApiKey}`,
       accounts: [`${mnemonic}`]
+    }
+  },
+  etherscan: {
+    apiKey: {
+      arbitrumTestnet: "//api-testnet.arbiscan.io/api"
     }
   }
 };
