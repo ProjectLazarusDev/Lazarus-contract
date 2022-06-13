@@ -346,29 +346,6 @@ contract BobotGenesis is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable
     }
     /**************************************************************************/
     /*!
-       \brief set whitelist guardians
-    */
-    /**************************************************************************/
-    function setWhitelistGuardians(address[] calldata _address)
-        public
-        onlyOwner
-    {
-        delete whitelistedAddressesGuardians;
-        whitelistedAddressesGuardians = _address;
-    }
-
-    /**************************************************************************/
-    /*!
-       \brief set whitelist lunar
-    */
-    /**************************************************************************/
-    function setWhitelistLunars(address[] calldata _address) public onlyOwner {
-        delete whitelistedAddressesLunars;
-        whitelistedAddressesLunars = _address;
-    }
-
-    /**************************************************************************/
-    /*!
        \brief set Core Chamber Contract
     */
     /**************************************************************************/

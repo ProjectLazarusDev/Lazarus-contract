@@ -19,8 +19,6 @@ module.exports = {
     }
   },
   etherscan: {
-    apiKey: {
-      arbitrumTestnet: "//api-testnet.arbiscan.io/api"
-    }
+    apiKey:   "IYZ1Y5N4H8VJEADKTMUF1FD1VHY9N7CCA5", arbitrumTestnet: "//api-testnet.arbiscan.io/api",    
   }
 };
