@@ -1110,7 +1110,7 @@
             "label": "coreChamber",
             "offset": 0,
             "slot": "265",
-            "type": "t_contract(CoreChamber)5631",
+            "type": "t_contract(CoreChamber)5812",
             "contract": "BobotGenesis",
             "src": "contracts\\BobotGenesis.sol:99"
           },
@@ -1168,7 +1168,7 @@
             "label": "bytes32",
             "numberOfBytes": "32"
           },
-          "t_contract(CoreChamber)5631": {
+          "t_contract(CoreChamber)5812": {
             "label": "contract CoreChamber",
             "numberOfBytes": "20"
           },

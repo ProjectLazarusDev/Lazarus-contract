@@ -57,6 +57,7 @@ import "./interfaces/IStake.sol";
 
 contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable 
 {
+    
     using SafeERC20Upgradeable for IERC20Upgradeable;
     using AddressUpgradeable for address;
     using CountersUpgradeable for CountersUpgradeable.Counter;
