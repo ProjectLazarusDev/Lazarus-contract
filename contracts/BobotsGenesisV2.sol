@@ -211,16 +211,14 @@ contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeab
     }
 
     /////////// AIRDROP FUNCTIONS /////////////////////////
-    function airdrop(address _addressOfToken, 
-        address[] memory _recipients, 
-        uint256[] memory _values) external onlyOwner
+    function airdrop(address _to, 
+        uint256 _amount) public onlyOwner
     {
-        require(_recipients.length == _values.length, "Total number of recipients and values are not equal");
-        require(internalAddressesClaimed[msg.sender] == false);
-
-        for (uint256 i = 0; i < _recipients.length; ++i)
+        require(_getNextTokenId() + _amount <= maxSupply);
+        for (uint256 i = 0; i < _amount; ++i)
         {
-            
+            uint256 nextTokenId = _getNextTokenId();
+            _safeMint(_to, nextTokenId);
         }
     }
 
