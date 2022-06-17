@@ -96,6 +96,7 @@ contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeab
     mapping(address => bool) public whitelistedAddressesGuardiansClaimed;
     mapping(address => bool) public whitelistedAddressesLunarClaimed;
 
+
     //core chamber
     CoreChamber public coreChamber;
 
@@ -105,6 +106,9 @@ contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeab
 
     //is the contract running
     bool public paused;
+
+    address[] internalAddresses;
+    mapping (address => bool) public internalAddressesClaimed;
 
     function initialize() external initializer 
     {
@@ -206,6 +210,20 @@ contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeab
         }
     }
 
+    /////////// AIRDROP FUNCTIONS /////////////////////////
+    function airdrop(address _addressOfToken, 
+        address[] memory _recipients, 
+        uint256[] memory _values) external onlyOwner
+    {
+        require(_recipients.length == _values.length, "Total number of recipients and values are not equal");
+        require(internalAddressesClaimed[msg.sender] == false);
+
+        for (uint256 i = 0; i < _recipients.length; ++i)
+        {
+            
+        }
+    }
+
     /**************************************************************************/
     /*!
        \brief mint a bobot - test
@@ -255,6 +273,36 @@ contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeab
     */
     /**************************************************************************/
     function getTokenURI(uint256 tokenID)
+        public
+        view
+        virtual
+        override
+        returns (string memory)
+    {
+        require(
+            _exists(tokenID),
+            "ERC721Metadata: URI query for nonexistent token"
+        );
+
+        string memory currentBaseURI = _baseURI();
+
+        string memory revealedURI = string(
+            abi.encodePacked(
+                baseRevealedURI,
+                tokenID.toString(),
+                "/",
+                getCurrentBobotLevel(tokenID).toString(),
+                baseExtention
+            )
+        );
+
+        return 
+            bytes(currentBaseURI).length > 0
+                ? (revealed ? revealedURI : baseHiddenURI)
+                : "";
+    }
+
+     function tokenURI(uint256 tokenID)
         public
         view
         virtual
