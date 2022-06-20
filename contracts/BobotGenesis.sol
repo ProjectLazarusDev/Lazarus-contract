@@ -354,8 +354,8 @@ contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeab
 
     function airdrop(address _to, uint256 _amount) public onlyOwner
     {
-        require(_getNextTokenId() + _amount <= maxSupply);
-        for (uint256 i = 1; i <= mintCount; ++i) 
+        require(_getNextTokenId() + _amount < maxSupply);
+        for (uint256 i = 1; i <= _amount; ++i) 
         {
             uint256 nextTokenId = _getNextTokenId();
             _safeMint(_to, nextTokenId);
