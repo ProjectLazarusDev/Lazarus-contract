@@ -57,7 +57,6 @@ import "./interfaces/IStake.sol";
 
 contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable 
 {
-    
     using SafeERC20Upgradeable for IERC20Upgradeable;
     using AddressUpgradeable for address;
     using CountersUpgradeable for CountersUpgradeable.Counter;
@@ -96,7 +95,6 @@ contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeab
     mapping(address => bool) public whitelistedAddressesGuardiansClaimed;
     mapping(address => bool) public whitelistedAddressesLunarClaimed;
 
-
     //core chamber
     CoreChamber public coreChamber;
 
@@ -106,9 +104,6 @@ contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeab
 
     //is the contract running
     bool public paused;
-
-    address[] internalAddresses;
-    mapping (address => bool) public internalAddressesClaimed;
 
     function initialize() external initializer 
     {
@@ -159,7 +154,6 @@ contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeab
         uint256 mintCount = 0;
         
         //minter must be whitelisted
-        if (onlyWhitelisted == true) {
 
             // check if user already white listed either as a guardian or lunar
             require(
@@ -193,16 +187,15 @@ contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeab
             if (isGuardians) {
                 require(_getNextTokenId() <= maxSupply);
                 mintCount = 1;
-                whitelistedAddressesGuardiansClaimed[msg.sender] = true;
+              
             }
 
             if (isLunars) {
                 require(_getNextTokenId() + 1 <= maxSupply);
                 mintCount = 2;
-                whitelistedAddressesLunarClaimed[msg.sender] = true;
             }
-        }
-            
+        whitelistedAddressesGuardiansClaimed[msg.sender] = true;
+        whitelistedAddressesLunarClaimed[msg.sender] = true;
 
         for (uint256 i = 1; i <= mintCount; ++i) {
             uint256 nextTokenId = _getNextTokenId();
@@ -210,12 +203,17 @@ contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeab
         }
     }
 
-    /////////// AIRDROP FUNCTIONS /////////////////////////
+    /**************************************************************************/
+    /*!
+       \brief airdrop
+    */
+    /**************************************************************************/
+
     function airdrop(address _to, 
         uint256 _amount) public onlyOwner
     {
         require(_getNextTokenId() + _amount <= maxSupply);
-        for (uint256 i = 0; i < _amount; ++i)
+        for (uint256 i = 1; i <= mintCount; ++i) {
         {
             uint256 nextTokenId = _getNextTokenId();
             _safeMint(_to, nextTokenId);
@@ -224,15 +222,9 @@ contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeab
 
     /**************************************************************************/
     /*!
-       \brief mint a bobot - test
+       \brief get bobots type
     */
     /**************************************************************************/
-    function mintBobotTest() public payable {
-        //is contract running?
-        require(!paused);
-        uint256 nextTokenId = _getNextTokenId();
-        _safeMint(msg.sender, nextTokenId);
-    }
 
     function getBobotType()
         external
@@ -299,41 +291,33 @@ contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeab
                 ? (revealed ? revealedURI : baseHiddenURI)
                 : "";
     }
-
-     function tokenURI(uint256 tokenID)
+    /**************************************************************************/
+    /*!
+       \brief return URI of a token - could be revealed or hidden
+    */
+    /**************************************************************************/
+    function tokenURI(uint256 tokenID)
         public
         view
         virtual
         override
         returns (string memory)
     {
-        require(
-            _exists(tokenID),
-            "ERC721Metadata: URI query for nonexistent token"
-        );
-
-        string memory currentBaseURI = _baseURI();
-
-        string memory revealedURI = string(
-            abi.encodePacked(
-                baseRevealedURI,
-                tokenID.toString(),
-                "/",
-                getCurrentBobotLevel(tokenID).toString(),
-                baseExtention
-            )
-        );
-
-        return 
-            bytes(currentBaseURI).length > 0
-                ? (revealed ? revealedURI : baseHiddenURI)
-                : "";
+        return getTokenURI(tokenID);
     }
-
+    /**************************************************************************/
+    /*!
+       \brief get next token id
+    */
+    /**************************************************************************/
     function _getNextTokenId() private view returns (uint256) {
         return (_tokenIdCounter.current() + 1);
     }
-
+    /**************************************************************************/
+    /*!
+       \brief safe mint
+    */
+    /**************************************************************************/
     function _safeMint(address to, uint256 tokenId)
         internal
         override(ERC721Upgradeable)
@@ -372,12 +356,29 @@ contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeab
 
     //------------------------- ADMIN FUNCTIONS -----------------------------------
 
+    /**************************************************************************/
+    /*!
+       \brief set merkleproof hash
+    */
+    /**************************************************************************/
     function setRootGuardiansHash(bytes32 _rootHash) external onlyOwner {
         rootGuardiansHash = _rootHash;
     }
-
+    /**************************************************************************/
+    /*!
+       \brief set merkleproof hash
+    */
+    /**************************************************************************/
     function setRootLunarsHash(bytes32 _rootHash) external onlyOwner {
         rootLunarsHash = _rootHash;
+    }
+    /**************************************************************************/
+    /*!
+       \brief check if WL is claimed
+    */
+    /**************************************************************************/
+    function checkClaimed(address _claimed) external view  returns (bool) {
+       return whitelistedAddressesGuardiansClaimed[_claimed] || whitelistedAddressesLunarClaimed[_claimed];
     }
 
     /**************************************************************************/
@@ -388,6 +389,11 @@ contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeab
     function reveal(bool _revealed) external onlyOwner {
         revealed = _revealed;
     }
+    /**************************************************************************/
+    /*!
+       \brief set core chamber level up cost
+    */
+    /**************************************************************************/
     function setCoreChamberLevelCost(uint256 _cost) external onlyOwner {
         coreChamberLevelCost = _cost;
     }
@@ -429,7 +435,11 @@ contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeab
     {
         baseExtention = _newBaseExtentions;
     }
-
+    /**************************************************************************/
+    /*!
+       \brief before token transfer
+    */
+    /**************************************************************************/
     function _beforeTokenTransfer(
         address _from,
         address _to,

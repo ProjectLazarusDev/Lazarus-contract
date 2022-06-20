@@ -53,9 +53,8 @@ import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 //other staking contracts
 import "./interfaces/IBobot.sol";
 import "./InstallationCoreChamber.sol";
-import "./interfaces/IStake.sol";
 
-contract BobotGenesis is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable 
+contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable 
 {
     using SafeERC20Upgradeable for IERC20Upgradeable;
     using AddressUpgradeable for address;
@@ -72,7 +71,6 @@ contract BobotGenesis is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable
 
     //reveal whitelist variables
     bool public revealed;
-    bool public onlyWhitelisted;
 
     //store whitelisted addresses
     address[] whitelistedAddressesGuardians;
@@ -98,12 +96,13 @@ contract BobotGenesis is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable
     //core chamber
     CoreChamber public coreChamber;
 
+    //is the contract mint running
+    bool public paused;
+
     //core points on a per bobot basis
     //one bobot -> core point
     mapping(uint256 => uint256) public bobotCorePoints;
 
-    //is the contract running
-    bool public paused;
 
     function initialize() external initializer 
     {
@@ -113,7 +112,6 @@ contract BobotGenesis is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable
         baseExtention = ""; 
         maxLevelAmount = 10; 
         revealed = false; 
-        onlyWhitelisted = true;
         paused = false;
     }
     
@@ -154,68 +152,61 @@ contract BobotGenesis is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable
         uint256 mintCount = 0;
         
         //minter must be whitelisted
-        if (onlyWhitelisted == true) {
 
-            // check if user already white listed either as a guardian or lunar
-            require(
-                 whitelistedAddressesGuardiansClaimed[msg.sender] == false ||
-                 whitelistedAddressesLunarClaimed[msg.sender] == false,
-                "user already whitelisted"
-            );
+        // check if user already white listed either as a guardian or lunar
+        require(
+             whitelistedAddressesGuardiansClaimed[msg.sender] == false ||
+             whitelistedAddressesLunarClaimed[msg.sender] == false,
+            "user already whitelisted"
+        );
 
-            bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
+        bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
 
-            bool isGuardians = MerkleProof.verify(
-                _merkleProof,
-                rootGuardiansHash,
-                leaf
-            );
-            bool isLunars = MerkleProof.verify(
-                _merkleProof2,
-                rootLunarsHash,
-                leaf
-            );
+        bool isGuardians = MerkleProof.verify(
+            _merkleProof,
+            rootGuardiansHash,
+            leaf
+        );
+        bool isLunars = MerkleProof.verify(
+            _merkleProof2,
+            rootLunarsHash,
+            leaf
+        );
 
-            //check if leaf is valid
-            require(
-                isGuardians || isLunars,
-                "Invalid proof - not whitelisted"
-            );
+        //check if leaf is valid
+        require(
+            isGuardians || isLunars,
+            "Invalid proof - not whitelisted"
+        );
 
-            //guardians will have 1 mint
-            //lunars will have 2 mint
+        //guardians will have 1 mint
+        //lunars will have 2 mint
 
-            if (isGuardians) {
-                require(_getNextTokenId() <= maxSupply);
-                mintCount = 1;
-                whitelistedAddressesGuardiansClaimed[msg.sender] = true;
-            }
-
-            if (isLunars) {
-                require(_getNextTokenId() + 1 <= maxSupply);
-                mintCount = 2;
-                whitelistedAddressesLunarClaimed[msg.sender] = true;
-            }
+        if (isGuardians) {
+            require(_getNextTokenId() <= maxSupply);
+            mintCount = 1;
+          
         }
-            
+
+        if (isLunars) {
+            require(_getNextTokenId() + 1 <= maxSupply);
+            mintCount = 2;
+        }
+
+        //user claimed WL
+        whitelistedAddressesGuardiansClaimed[msg.sender] = true;
+        whitelistedAddressesLunarClaimed[msg.sender] = true;
 
         for (uint256 i = 1; i <= mintCount; ++i) {
             uint256 nextTokenId = _getNextTokenId();
             _safeMint(msg.sender, nextTokenId);
         }
     }
-
     /**************************************************************************/
     /*!
-       \brief mint a bobot - test
+       \brief get bobots type
     */
     /**************************************************************************/
-    function mintBobotTest() public payable {
-        //is contract running?
-        require(!paused);
-        uint256 nextTokenId = _getNextTokenId();
-        _safeMint(msg.sender, nextTokenId);
-    }
 
     function getBobotType()
         external
@@ -282,11 +273,33 @@ contract BobotGenesis is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable
                 ? (revealed ? revealedURI : baseHiddenURI)
                 : "";
     }
-
+    /**************************************************************************/
+    /*!
+       \brief return URI of a token - could be revealed or hidden
+    */
+    /**************************************************************************/
+    function tokenURI(uint256 tokenID)
+        public
+        view
+        virtual
+        override
+        returns (string memory)
+    {
+        return getTokenURI(tokenID);
+    }
+    /**************************************************************************/
+    /*!
+       \brief get next token id
+    */
+    /**************************************************************************/
     function _getNextTokenId() private view returns (uint256) {
         return (_tokenIdCounter.current() + 1);
     }
-
+    /**************************************************************************/
+    /*!
+       \brief safe mint
+    */
+    /**************************************************************************/
     function _safeMint(address to, uint256 tokenId)
         internal
         override(ERC721Upgradeable)
@@ -310,7 +323,14 @@ contract BobotGenesis is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable
             maxLevelAmount
         );
     }
-
+    /**************************************************************************/
+    /*!
+       \brief check if WL is claimed
+    */
+    /**************************************************************************/
+    function checkClaimed(address _claimed) external view  returns (bool) {
+       return whitelistedAddressesGuardiansClaimed[_claimed] || whitelistedAddressesLunarClaimed[_claimed];
+    }
     /**************************************************************************/
     /*!
        \brief earning core points logic
@@ -325,10 +345,36 @@ contract BobotGenesis is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable
 
     //------------------------- ADMIN FUNCTIONS -----------------------------------
 
+
+    /**************************************************************************/
+    /*!
+       \brief airdrop
+    */
+    /**************************************************************************/
+
+    function airdrop(address _to, uint256 _amount) public onlyOwner
+    {
+        require(_getNextTokenId() + _amount <= maxSupply);
+        for (uint256 i = 1; i <= mintCount; ++i) 
+        {
+            uint256 nextTokenId = _getNextTokenId();
+            _safeMint(_to, nextTokenId);
+        }
+    }
+
+    /**************************************************************************/
+    /*!
+       \brief set merkleproof hash
+    */
+    /**************************************************************************/
     function setRootGuardiansHash(bytes32 _rootHash) external onlyOwner {
         rootGuardiansHash = _rootHash;
     }
-
+    /**************************************************************************/
+    /*!
+       \brief set merkleproof hash
+    */
+    /**************************************************************************/
     function setRootLunarsHash(bytes32 _rootHash) external onlyOwner {
         rootLunarsHash = _rootHash;
     }
@@ -341,6 +387,11 @@ contract BobotGenesis is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable
     function reveal(bool _revealed) external onlyOwner {
         revealed = _revealed;
     }
+    /**************************************************************************/
+    /*!
+       \brief set core chamber level up cost
+    */
+    /**************************************************************************/
     function setCoreChamberLevelCost(uint256 _cost) external onlyOwner {
         coreChamberLevelCost = _cost;
     }
@@ -370,7 +421,6 @@ contract BobotGenesis is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable
     function setBaseHiddenURI(string memory _newBaseURI) public onlyOwner {
         baseHiddenURI = _newBaseURI;
     }
-
     /**************************************************************************/
     /*!
        \brief set Base Extensions
@@ -382,7 +432,11 @@ contract BobotGenesis is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable
     {
         baseExtention = _newBaseExtentions;
     }
-
+    /**************************************************************************/
+    /*!
+       \brief before token transfer
+    */
+    /**************************************************************************/
     function _beforeTokenTransfer(
         address _from,
         address _to,
