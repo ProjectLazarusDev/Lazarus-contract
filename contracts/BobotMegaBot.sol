@@ -64,17 +64,17 @@ contract BobotMegaBot is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable
     //magic contract
     IERC20Upgradeable public magic;
 
-    uint256 currencyExchange = (10**9);
+    //uint256 currencyExchange = (10**9);
     uint256 mintCost = 0.15 ether;
 
     //revealed and unrevealed uri
     string public baseRevealedURI;
     string public baseHiddenURI;
 
-    string public baseExtention = ".json";
-    uint256 public maxSupply = 1000;
-    uint256 public maxLevelAmount = 20;
-    uint256 public currentLevelAmount = 0;
+    string public baseExtention;
+    uint256 constant maxSupply = 404;
+    uint256 public maxLevelAmount;
+    uint256 public currentLevelAmount;
 
     //core chamber level update cost
     uint256 public coreChamberLevelCost;

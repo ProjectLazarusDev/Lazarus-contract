@@ -41,6 +41,114 @@
 // //////////////////////////////////////////////////////////////////////////////////
 
 pragma solidity ^0.8.13;
+
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
+
+import "./IMiningDrill.sol";
+
+contract MiningDrill is 
+    Initializable,
+    OwnableUpgradeable, 
+    PausableUpgradeable
+{
+    using SafeERC20Upgradeable for IERC20Upgradeable;
+    using AddressUpgradeable for address;
+
+    address public TREASURY_WALLET;
+
+    // immutable states 
+    IERC20Upgradeable public MAGIC; 
+    IMiningDrill public MINING_DRILL;
+
+    IMiningDrill.Duration[] public DURATIONS; 
+    IMiningDrill.Duration[] public allowedDurations; 
+
+    IMiningDrill.Tier[] public TIERS; 
+
+    // operator states
+    uint256 public override currentDepositId;
+
+    function initialize(
+        address _magic,
+        address _miningDrill, 
+        address _treasury
+    ) external initializer{
+        require (_magic != address(0), "Bobots Mining Drill: invalid address");
+        require (_miningDrill != address(0), "Bobots Mining Drill: invalid address");
+
+        MAGIC = IERC20Upgradeable(_magic);
+        MINING_DRILL = IMiningDrill(_miningDrill);
+
+        DURATIONS = [
+            IMiningDrill.Duration.TWO_WEEKS,
+            IMiningDrill.Duration.ONE_MTH,
+            IMiningDrill.Duration.THREE_MTHS,
+            IMiningDrill.Duration.SIX_MTHS,
+            IMiningDrill.Duration.ONE_YEAR
+        ];
+
+        TIERS = [
+            IMiningDrill.Tier.Gold, 
+            IMiningDrill.Tier.Silver, 
+            IMiningDrill.Tier.Bronze
+        ];
+
+        setTreasury(_treasury);
+    }
+    
+    function deposit(uint256 _amount, IMiningDrill.Duration _duration)
+        external
+        override
+        whenNotPaused
+        returns (uint256)
+    {
+        require(_amount > 0, "BattflyAtlasStaker: cannot deposit 0");
+
+        MAGIC.safeTransferFrom(_msgSender(), address(this), _amount);
+
+        uint256 newDepositId = ++currentDepositId;
+        uint256 unlockAt = _deposit(newDepositId, _amount, _lock);
+        emit NewDeposit(_msgSender(), _amount, unlockAt);
+        return newDepositId;
+    }
+
+    // -------------------- OWNER OPERATIONS --------------------------
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    function unpause() external onlyOwner {
+        _unpause();
+    }
+    
+    function setTreasury(address _treasury) public onlyOwner {
+        require(_treasury != address(0), "Bobots Mining Drill: invalid address");
+        TREASURY_WALLET = _treasury;
+        //emit SetTreasury(_treasury);
+    }
+
+    // -------------------- VIEW OPERATIONS ---------------------------
+    function isValidLock(IMiningDrill.Duration _duration) public view returns (bool) {
+        for (uint256 i = 0; i < allowedDurations.length; ++i)
+        {
+            if (allowedDurations[i] == _duration)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    
+    // --------------------- EVENTS --------------------------
+    event SetTreasury(address treasury);
+
+}
+
 // //import "./ERC721NES.sol";
 // import "@openzeppelin/contracts/access/Ownable.sol";
 

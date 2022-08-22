@@ -13,6 +13,13 @@ interface IMiningDrill
         ONE_YEAR
     }
 
+    enum Tier
+    {
+        Gold, 
+        Silver, 
+        Bronze
+    }
+
     // get Bobots staked duration
     function getStakedDuration(uint256 _tokenID) external view returns(Duration);
 

@@ -106,7 +106,9 @@ contract BobotNanoBot is IBobot, ERC1155Upgradeable, ERC1155BurnableUpgradeable,
     function mint(address account, uint256 amount) public
     {
         require(balanceof(account) == 10, "you have already minted the max amount of nanobots");
-        _mint(account, 0, amount, "0x000");
+        
+        // use the seed to generate a nanobot of different tier
+        _mint(account, 0, amount, "");
     }
 
 
@@ -147,6 +149,10 @@ contract BobotNanoBot is IBobot, ERC1155Upgradeable, ERC1155BurnableUpgradeable,
         uint256 randomNumber = uint256(keccak256(abi.encodePacked(blockhash(block.number - 1), msg.sender, seed)));
         seed = randomNumber;
         return randomNumber;
+    }
+
+    function _checkTokenApproval() internal {
+        // TO IMPLEMENT
     }
 
 }
