@@ -23,4 +23,5 @@ interface IMiningDrill
     // get Bobots staked duration
     function getStakedDuration(uint256 _tokenID) external view returns(Duration);
 
+    function bobotsGenesis() external view returns (address);
 }

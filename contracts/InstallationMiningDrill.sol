@@ -43,6 +43,8 @@
 pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
@@ -53,12 +55,14 @@ import "./IMiningDrill.sol";
 contract MiningDrill is 
     Initializable,
     OwnableUpgradeable, 
-    PausableUpgradeable
+    PausableUpgradeable,
+    ERC721HolderUpgradeable
 {
     using SafeERC20Upgradeable for IERC20Upgradeable;
     using AddressUpgradeable for address;
 
     address public TREASURY_WALLET;
+    uint256 public PRICE;
 
     // immutable states 
     IERC20Upgradeable public MAGIC; 
@@ -70,7 +74,9 @@ contract MiningDrill is
     IMiningDrill.Tier[] public TIERS; 
 
     // operator states
-    uint256 public override currentDepositId;
+    uint256 public currentDepositId;
+
+    mapping(uint256 => address) public bobotGenesisStakers;
 
     function initialize(
         address _magic,
@@ -102,7 +108,6 @@ contract MiningDrill is
     
     function deposit(uint256 _amount, IMiningDrill.Duration _duration)
         external
-        override
         whenNotPaused
         returns (uint256)
     {
@@ -111,9 +116,37 @@ contract MiningDrill is
         MAGIC.safeTransferFrom(_msgSender(), address(this), _amount);
 
         uint256 newDepositId = ++currentDepositId;
-        uint256 unlockAt = _deposit(newDepositId, _amount, _lock);
-        emit NewDeposit(_msgSender(), _amount, unlockAt);
-        return newDepositId;
+        // uint256 unlockAt = _deposit(newDepositId, _amount, _lock);
+        // emit NewDeposit(_msgSender(), _amount, unlockAt);
+        // return newDepositId;
+    }
+
+    function _claim(uint256 _depositId) internal returns (uint256) {
+        //VaultStake storage vaultStake = vaultStakes[_depositId];
+        //require(vaultStake.vault == _msgSender(), "BattleflyAtlasStaker: caller is not a correct vault");
+
+        //(uint256 emission, uint256 fee) = getClaimableEmission(_depositId);
+        //require(emission > 0, "BattleflyAtlasStaker: no emission");
+
+        //MAGIC.safeTransfer(_msgSender(), emission);
+        //MAGIC.safeTransfer(TREASURY_WALLET, fee);
+        //uint256 amount = emission + fee;
+        //vaultStake.paidEmission += amount;
+        //return emission;
+    }
+
+    function stake(uint256 _tokenID, IMiningDrill.Tier _tier) external {
+
+    }
+
+    function unstake(uint256 _tokenID, IMiningDrill.Tier _tier) external {
+        require(bobotGenesisStakers[_tokenID] == _msgSender(), "Bobots Mining Drill: Invalid staker");
+        // need to check according to the tier on the durability and rewards
+
+        // transfer bobots to the staker 
+        getBobotsGenesis().safeTransferFrom(address(this), _msgSender(), _tokenID, "");
+        bobotGenesisStakers[_tokenID] = address(0);
+        emit UnstakedBobotsGen(_msgSender(), _tokenID);
     }
 
     // -------------------- OWNER OPERATIONS --------------------------
@@ -143,9 +176,17 @@ contract MiningDrill is
         return false;
     }
 
+    function getClaimableEmission(uint256 _depositId, IMiningDrill.Tier _tier) public view returns (uint256 emission, uint256 fee) {
+        
+    }
+
+    function getBobotsGenesis() public view returns (IERC721Upgradeable) {
+        return IERC721Upgradeable(MINING_DRILL.bobotsGenesis());
+    }
     
     // --------------------- EVENTS --------------------------
     event SetTreasury(address treasury);
+    event UnstakedBobotsGen(address staker, uint256 tokenId);
 
 }
 
