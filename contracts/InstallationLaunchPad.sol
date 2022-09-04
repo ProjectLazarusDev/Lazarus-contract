@@ -49,20 +49,13 @@ pragma solidity ^0.8.13;
 
 import "./interfaces/ILaunchPad.sol";
 
-// contract LaunchPad is OwnableUpgradeable
-// {
+ contract LaunchPad is OwnableUpgradeable
+ {
 
         // KF IS HERE
 
-        uint missionTypes = 30;
-        LaunchPad[] public launchPads;
-        FameStats[] private FameTiers;
-        MissionRewards[] private AllMissionRewards;
 
-        event NewLaunchPad(LPTier tier, uint missionId);
-        event BurnLaunchPad(uint launchPadId);
-
-        struct LaunchPad{
+        struct LaunchPadData{
             ILaunchPad.LPTier tierType;
             uint missionId;
             uint fame;
@@ -84,7 +77,12 @@ import "./interfaces/ILaunchPad.sol";
             uint priStatValue;
             uint secStatValue;
         }
-
+        struct RewardValues
+        {
+            uint failValue;
+            uint successValue;
+            uint critValue;
+        }
         struct MissionRewards
         {
             // BobotType;
@@ -98,11 +96,24 @@ import "./interfaces/ILaunchPad.sol";
             RewardValues fameGain;
         }
 
-        struct RewardValues
-        {
-            uint failValue;
-            uint successValue;
-            uint critValue;
+        
+        uint missionTypes = 30;
+        LaunchPadData[] public launchPads;
+        FameStats[] private FameTiers;
+        MissionRewards[] private AllMissionRewards;
+
+        BobotsGenesis public bobotsGenesis;
+
+        event NewLaunchPad(LPTier tier, uint missionId);
+        event BurnLaunchPad(uint launchPadId);
+
+        /**************************************************************************/
+        /*!
+        \brief set Core Chamber Contract
+        */
+        /**************************************************************************/
+        function setBobotsGensis(address _bobotsGenesis) external onlyOwner {
+            bobotsGenesis = BobotsGensis(_bobotsGenesis);
         }
 
         function _createLaunchPad(ILaunchPad.LPTier _tier, uint _missionId) private {
@@ -132,23 +143,23 @@ import "./interfaces/ILaunchPad.sol";
             // get stats from bobot
 
             // Find pri stat of land and save bobot's pri stat
-            // StatType priStat = land.priStat;
-            // uint priStatVal = bobot.Stats.priStat;
-
+             StatType priStat = land.priStat;
+             uint priStatVal = bobot.Stats.priStat;
+            bobotsGenesis.getTokenURI(_bobotTokenID)
             // Get both sec stat types from land, find from bobot the 2 stat types and divide by 2
-            // StatType secStat1 = land.secStat1;
-            // uint secStat1Val = bobot.Stats.secStat1 / 2;
-            // StatType secStat2 = land.secStat2;
-            // uint secStat2Val = bobot.Stats.secStat2 / 2;
+             StatType secStat1 = land.secStat1;
+             uint secStat1Val = bobot.Stats.secStat1 / 2;
+             StatType secStat2 = land.secStat2;
+             uint secStat2Val = bobot.Stats.secStat2 / 2;
 
             // FameStats highestFound = _getStatsByFame(land.fame);
-            // uint priDiff = highestFound.priStatValue - priStatVal;
-            // uint secDiff = (highestFound.secStatValue * 2) - secStat1Val - secStat2Val;
-            // uint challengeSum = priDiff + secDiff;
+             uint priDiff = highestFound.priStatValue - priStatVal;
+             uint secDiff = (highestFound.secStatValue * 2) - secStat1Val - secStat2Val;
+             uint challengeSum = priDiff + secDiff;
 
-            // baseSuccess = 50 + challengeSum;
+             baseSuccess = 50 + challengeSum;
             // Clamp baseSuccess between 0 and 100
-            // critSuccess = 100 + challengeSum;
+             critSuccess = 100 + challengeSum;
             // Clamp critSuccess between 0 and 100
 
             return baseSuccess, critSuccess;
@@ -309,4 +320,4 @@ import "./interfaces/ILaunchPad.sol";
 //     function setBobotGenesis(address _bobotGenesis) external onlyOwner {
 //         bobotGenesis = BobotGenesis(_bobotGenesis);
 //     }
-// }
+ }
