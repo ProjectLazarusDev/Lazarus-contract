@@ -53,17 +53,22 @@ contract CoreChamberFactory is
 {
     event NewCoreChamber(uint ccID, ICoreChamber.CCTier _tier); 
 
-    uint ccMod = 10 ** 3; 
-
     struct CoreChamber{
         ICoreChamber.CCTier tierType;
     }
+
+    uint256 public coreChamberLevelCost;
+    bool public paused;
+
+    BobotGenesisV2 bobotsGenContract;
 
     CoreChamber[] public coreChambers;
 
     mapping (uint => address) public ccToOwners;
     mapping(uint256 => uint256) public genesisTimestampJoined;
     mapping (address => uint) public ownersCCcount;
+
+    mapping (address => uint) public bobotsCorePoints;
 
     function _createCoreChamber(string memory _name, ICoreChamber.CCTier _tier) private {
         uint id = coreChambers.push(CoreChamber(_tier)) - 1; 
@@ -73,9 +78,13 @@ contract CoreChamberFactory is
 
     }
 
+    function _calculateEmissions(ICoreChamber.CCTier _tier) private returns (uint) { 
+
+    }
+
     function _generateRandomCC(string memory _str) private view returns (uint) {
         uint rand = uint(keccak256(abi.encodePacked(_str))); 
-        return rand % ccMod;
+        return rand % 100;
     }
 
     function createRandomCoreChamber(string memory _name) public {
@@ -83,6 +92,28 @@ contract CoreChamberFactory is
         _createCoreChamber(_name, randomTier);
     }
     
+    function emissions(ICoreChamber.CCTier _tier) public {
+
+    }
+
+    function stake(uint _bobotID, uint _ccID, ICoreChamber.CCTier _tier) public {
+        require(msg.sender == ccToOwners[_ccID]); 
+        
+
+    }
+
+    function unstake(uint _bobotID, uint _ccID, ICoreChamber.CCTier _tier) public {
+        
+    }
+
+    // ----------------- OWNER FUNCTIONS -----------------------------
+    function setCoreChamberLevelCost(uint256 _cost) external onlyOwner {
+        coreChamberLevelCost = _cost;
+    }
+
+    function pause(bool _state) public onlyOwner {
+        paused = _state;
+    }
 
 }
 

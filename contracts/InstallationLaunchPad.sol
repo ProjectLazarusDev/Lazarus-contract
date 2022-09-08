@@ -49,46 +49,41 @@ pragma solidity ^0.8.13;
 
 import "./interfaces/ILaunchPad.sol";
 
-// contract LaunchPad is OwnableUpgradeable
-// {
+contract LaunchPad is OwnableUpgradeable
+{
+    uint missionTypes = 30;
+    LaunchPad[] public launchPads;
 
-        // KF IS HERE
+    event NewLaunchPad(LPTier tier, uint missionId);
+    event BurnLaunchPad(uint launchPadId);
 
-        uint missionTypes = 30;
-        LaunchPad[] public launchPads;
-
-        event NewLaunchPad(LPTier tier, uint missionId);
-        event BurnLaunchPad(uint launchPadId);
-
-        struct LaunchPad{
+    struct LaunchPad{
         ILaunchPad.LPTier tierType;
         uint missionId;
         uint fame;
         uint completedMissions;
-        }
+    }
 
-        function _createLaunchPad(ILaunchPad.LPTier _tier, uint _missionId) private {
+    function _createLaunchPad(ILaunchPad.LPTier _tier, uint _missionId) private {
         launchPads.push(LaunchPad(_tier, _missionId, 0, 0));
         emit NewLaunchPad(_tier, _missionId);
-        }
+    }
 
-        function _generateRandomMission(string memory _randomString) private view returns (uint){
+    function _generateRandomMission(string memory _randomString) private view returns (uint){
         uint rand = uint(keccak256(abi.encodePacked(_randomString)));
         return rand % missionTypes;
-        }
+    }
 
-        function createRandomLaunchPad(string memory _randomString, ILaunchPad.LPTier _tier, uint _missionId) public {
+    function createRandomLaunchPad(string memory _randomString, ILaunchPad.LPTier _tier, uint _missionId) public {
         uint randMission = _generateRandomMission(_randomString);
         _createLaunchPad(_tier, _missionId);
-        }
+    }
 
         // function to check burn immunity
         // function to check burn chance success or fail
         // function to burnLaunchPad
 
-
-        // KF END
-
+}
 
 //     // block number multiplier to determine the balance to accrue
 //     // during the duration staked. Defaults to 1.
