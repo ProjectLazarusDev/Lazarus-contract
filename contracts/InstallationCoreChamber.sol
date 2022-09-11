@@ -78,8 +78,21 @@ contract CoreChamberFactory is
 
     }
 
-    function _calculateEmissions(ICoreChamber.CCTier _tier) private returns (uint) { 
+    // amount of core points earned, call when unstaked
+    function _calculateEmissions(ICoreChamber.CCTier _tier) private returns (uint points) { 
 
+        // Need a way to get staked bobot
+        if (genesisTimestampJoined[_tokenId] == 0) return 0;
+        // Seconds staked
+        uint256 timedelta = block.timestamp -  genesisTimestampJoined[_tokenId];
+        uint corePointsPerHour = 0;
+
+        if (_tier == ICoreChamber.CCTier.Bronze)corePointsPerHour = 3;
+        else if (_tier == ICoreChamber.CCTier.Silver) corePointsPerHour = 4;
+        else if (_tier == ICoreChamber.CCTier.Gold) corePointsPerHour = 6;
+        else corePointsPerHour = 0;
+        points = corePointsPerHour * timedelta / 3600;
+        return points;
     }
 
     function _generateRandomCC(string memory _str) private view returns (uint) {
