@@ -66,12 +66,19 @@ contract MiningDrill is
 
     // immutable states 
     IERC20Upgradeable public MAGIC; 
-    IMiningDrill public MINING_DRILL;
+    //IMiningDrill public MINING_DRILL;
 
-    IMiningDrill.Duration[] public DURATIONS; 
+    struct MINING_DRILL{
+        IMiningDrill.Tier       tierType;
+        IMiningDrill.Duration   duration;
+        uint                    burnImmunity; 
+        uint                    burnChance;
+    }
+
+     
     IMiningDrill.Duration[] public allowedDurations; 
 
-    IMiningDrill.Tier[] public TIERS; 
+    //IMiningDrill.Tier[] public TIERS; 
 
     // operator states
     uint256 public currentDepositId;
@@ -87,21 +94,7 @@ contract MiningDrill is
         require (_miningDrill != address(0), "Bobots Mining Drill: invalid address");
 
         MAGIC = IERC20Upgradeable(_magic);
-        MINING_DRILL = IMiningDrill(_miningDrill);
-
-        DURATIONS = [
-            IMiningDrill.Duration.TWO_WEEKS,
-            IMiningDrill.Duration.ONE_MTH,
-            IMiningDrill.Duration.THREE_MTHS,
-            IMiningDrill.Duration.SIX_MTHS,
-            IMiningDrill.Duration.ONE_YEAR
-        ];
-
-        TIERS = [
-            IMiningDrill.Tier.Gold, 
-            IMiningDrill.Tier.Silver, 
-            IMiningDrill.Tier.Bronze
-        ];
+        //MINING_DRILL = IMiningDrill(_miningDrill);
 
         setTreasury(_treasury);
     }
@@ -181,7 +174,7 @@ contract MiningDrill is
     }
 
     function getBobotsGenesis() public view returns (IERC721Upgradeable) {
-        return IERC721Upgradeable(MINING_DRILL.bobotsGenesis());
+        //return IERC721Upgradeable(MINING_DRILL.bobotsGenesis());
     }
     
     // --------------------- EVENTS --------------------------
