@@ -5,7 +5,7 @@ async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deploying Core Chamber...");
 
-    const CoreChamber = await ethers.getContractFactory("CoreChamber");
+    const CoreChamber = await ethers.getContractFactory("CoreChamberFactory");
     const coreChamber = await upgrades.deployProxy(CoreChamber);
   
     console.log(coreChamber.address," core chamber(proxy) address");

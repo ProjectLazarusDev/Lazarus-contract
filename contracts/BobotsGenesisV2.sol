@@ -53,7 +53,6 @@ import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 //other staking contracts
 import "./interfaces/IBobot.sol";
 import "./InstallationCoreChamber.sol";
-import "./interfaces/IStake.sol";
 
 contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeable 
 {
@@ -72,7 +71,6 @@ contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeab
 
     //reveal whitelist variables
     bool public revealed;
-    bool public onlyWhitelisted;
 
     //store whitelisted addresses
     address[] whitelistedAddressesGuardians;
@@ -98,12 +96,13 @@ contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeab
     //core chamber
     CoreChamber public coreChamber;
 
+    //is the contract mint running
+    bool public paused;
+
     //core points on a per bobot basis
     //one bobot -> core point
     mapping(uint256 => uint256) public bobotCorePoints;
 
-    //is the contract running
-    bool public paused;
 
     function initialize() external initializer 
     {
@@ -113,7 +112,6 @@ contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeab
         baseExtention = ""; 
         maxLevelAmount = 10; 
         revealed = false; 
-        onlyWhitelisted = true;
         paused = false;
     }
     
@@ -155,45 +153,47 @@ contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeab
         
         //minter must be whitelisted
 
-            // check if user already white listed either as a guardian or lunar
-            require(
-                 whitelistedAddressesGuardiansClaimed[msg.sender] == false ||
-                 whitelistedAddressesLunarClaimed[msg.sender] == false,
-                "user already whitelisted"
-            );
+        // check if user already white listed either as a guardian or lunar
+        require(
+             whitelistedAddressesGuardiansClaimed[msg.sender] == false ||
+             whitelistedAddressesLunarClaimed[msg.sender] == false,
+            "user already whitelisted"
+        );
 
-            bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
+        bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
 
-            bool isGuardians = MerkleProof.verify(
-                _merkleProof,
-                rootGuardiansHash,
-                leaf
-            );
-            bool isLunars = MerkleProof.verify(
-                _merkleProof2,
-                rootLunarsHash,
-                leaf
-            );
+        bool isGuardians = MerkleProof.verify(
+            _merkleProof,
+            rootGuardiansHash,
+            leaf
+        );
+        bool isLunars = MerkleProof.verify(
+            _merkleProof2,
+            rootLunarsHash,
+            leaf
+        );
 
-            //check if leaf is valid
-            require(
-                isGuardians || isLunars,
-                "Invalid proof - not whitelisted"
-            );
+        //check if leaf is valid
+        require(
+            isGuardians || isLunars,
+            "Invalid proof - not whitelisted"
+        );
 
-            //guardians will have 1 mint
-            //lunars will have 2 mint
+        //guardians will have 1 mint
+        //lunars will have 2 mint
 
-            if (isGuardians) {
-                require(_getNextTokenId() <= maxSupply);
-                mintCount = 1;
-              
-            }
+        if (isGuardians) {
+            require(_getNextTokenId() <= maxSupply);
+            mintCount = 1;
+          
+        }
 
-            if (isLunars) {
-                require(_getNextTokenId() + 1 <= maxSupply);
-                mintCount = 2;
-            }
+        if (isLunars) {
+            require(_getNextTokenId() + 1 <= maxSupply);
+            mintCount = 2;
+        }
+
+        //user claimed WL
         whitelistedAddressesGuardiansClaimed[msg.sender] = true;
         whitelistedAddressesLunarClaimed[msg.sender] = true;
 
@@ -202,24 +202,6 @@ contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeab
             _safeMint(msg.sender, nextTokenId);
         }
     }
-
-    /**************************************************************************/
-    /*!
-       \brief airdrop
-    */
-    /**************************************************************************/
-
-    function airdrop(address _to, 
-        uint256 _amount) public onlyOwner
-    {
-        require(_getNextTokenId() + _amount <= maxSupply);
-        for (uint256 i = 1; i <= mintCount; ++i) {
-        {
-            uint256 nextTokenId = _getNextTokenId();
-            _safeMint(_to, nextTokenId);
-        }
-    }
-
     /**************************************************************************/
     /*!
        \brief get bobots type
@@ -341,7 +323,14 @@ contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeab
             maxLevelAmount
         );
     }
-
+    /**************************************************************************/
+    /*!
+       \brief check if WL is claimed
+    */
+    /**************************************************************************/
+    function checkClaimed(address _claimed) external view  returns (bool) {
+       return whitelistedAddressesGuardiansClaimed[_claimed] || whitelistedAddressesLunarClaimed[_claimed];
+    }
     /**************************************************************************/
     /*!
        \brief earning core points logic
@@ -355,6 +344,23 @@ contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeab
     }
 
     //------------------------- ADMIN FUNCTIONS -----------------------------------
+
+
+    /**************************************************************************/
+    /*!
+       \brief airdrop
+    */
+    /**************************************************************************/
+
+    function airdrop(address _to, uint256 _amount) public onlyOwner
+    {
+        require(_getNextTokenId() + _amount < maxSupply);
+        for (uint256 i = 1; i <= _amount; ++i) 
+        {
+            uint256 nextTokenId = _getNextTokenId();
+            _safeMint(_to, nextTokenId);
+        }
+    }
 
     /**************************************************************************/
     /*!
@@ -371,14 +377,6 @@ contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeab
     /**************************************************************************/
     function setRootLunarsHash(bytes32 _rootHash) external onlyOwner {
         rootLunarsHash = _rootHash;
-    }
-    /**************************************************************************/
-    /*!
-       \brief check if WL is claimed
-    */
-    /**************************************************************************/
-    function checkClaimed(address _claimed) external view  returns (bool) {
-       return whitelistedAddressesGuardiansClaimed[_claimed] || whitelistedAddressesLunarClaimed[_claimed];
     }
 
     /**************************************************************************/
@@ -423,7 +421,6 @@ contract BobotGenesisV2 is IBobot, ERC721EnumerableUpgradeable, OwnableUpgradeab
     function setBaseHiddenURI(string memory _newBaseURI) public onlyOwner {
         baseHiddenURI = _newBaseURI;
     }
-
     /**************************************************************************/
     /*!
        \brief set Base Extensions

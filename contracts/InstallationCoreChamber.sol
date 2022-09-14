@@ -44,16 +44,16 @@ pragma solidity ^0.8.13;
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 //import Bobot genesis
-import "./BobotGenesis.sol";
+import "./BobotsGenesisV2.sol";
 import "./ICoreChamber.sol";
 
 
-contract CoreChamberFactory is 
+contract CoreChamber is 
     OwnableUpgradeable
 {
     event NewCoreChamber(uint ccID, ICoreChamber.CCTier _tier); 
 
-    struct CoreChamber{
+    struct CC{
         ICoreChamber.CCTier tierType;
     }
 
@@ -62,7 +62,7 @@ contract CoreChamberFactory is
 
     BobotGenesisV2 bobotsGenContract;
 
-    CoreChamber[] public coreChambers;
+    CC[] public coreChambers;
 
     mapping (uint => address) public ccToOwners;
     mapping(uint256 => uint256) public genesisTimestampJoined;
