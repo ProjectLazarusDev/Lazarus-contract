@@ -132,6 +132,17 @@ contract BobotsLandItem is
 
     function _mint(address account, uint256 id, uint256 amount, bytes memory data) internal override {
         // INSERT RATES HERE 
+        
+        // LandTierRoll = RandomValue % 100; 
+        // if (LandTierRoll < 70) LandTier is Bronze
+        // else if (LandTierRoll < 95) LandTier is Silver
+        // else LandTier is Gold
+
+        // LandTypeRoll = RandomValue % 100; 
+        // if (LandTypeRoll < 60) LandType is Core Chamber
+        // else if (LandTypeRoll < 95) LandType is Launch Pad
+        // else LandType is Mining Drill
+        
         //uint256 rand = _createRandom(3);
 
     }
