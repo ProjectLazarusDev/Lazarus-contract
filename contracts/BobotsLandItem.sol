@@ -95,8 +95,8 @@ contract BobotsLandItem is
         uriSuffix = _suffix;
     }
 
-    function airdrop(address _to, uint256 _amount, LandType _type) public onlyOwner {
-        _mintSpecificLand(_to, _amount, _type);
+    function airdrop(address _to, uint256 _amount, LandType _type, ILandTier _tier) public onlyOwner {
+        _mintSpecificLand(_to, _amount, _type, _tier);
     }
 
     function uri(uint256 _tokenID) public override view returns (string memory){
@@ -118,9 +118,9 @@ contract BobotsLandItem is
         _burnBatch(_from, _ids, _amounts);
     }
 
-    function _mintSpecificLand(address _account, uint256 _amount, LandType _type) public onlyOwner {
+    function _mintSpecificLand(address _account, uint256 _amount, LandType _type, ILandTier _tier) public onlyOwner {
         if (_type == LandType.CORE_CHAMBER) {
-
+            
         }
         else if (_type == LandType.LAUNCH_PAD) {
 

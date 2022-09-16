@@ -106,7 +106,7 @@ contract CoreChamber is
     }
     
     function emissions(ICoreChamber.CCTier _tier) public {
-
+        _calculateEmissions(_tier);
     }
 
     function stake(uint _bobotID, uint _ccID, ICoreChamber.CCTier _tier) public {
